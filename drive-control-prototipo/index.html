@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#15191d">
+<title>DRIVE CONTROL | Prototipo</title>
+<style>
+:root{--bg:#101417;--panel:#1a2025;--panel2:#20282e;--line:#303a42;--text:#eef2f4;--muted:#9ba8b1;--green:#39d98a;--red:#ff6b6b;--amber:#f5bd4f;--blue:#69aef7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+.sidebar{background:#151a1e;border-right:1px solid var(--line);padding:24px 16px;position:sticky;top:0;height:100vh}
+.brand{font-size:19px;font-weight:850;letter-spacing:1.5px;padding:5px 12px 28px}.brand span{color:var(--green)}
+.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:2px;font-weight:600;margin-top:4px}
+.nav-label{color:#6f7c85;font-size:10px;letter-spacing:1.7px;padding:12px}
+.nav button{display:flex;gap:12px;align-items:center;width:100%;border:0;background:transparent;color:#b8c2c8;text-align:left;padding:12px;border-radius:9px;margin:3px 0}
+.nav button:hover,.nav button.active{background:#26332f;color:#fff}.nav button.active{box-shadow:inset 3px 0 var(--green)}
+.nav .ico{width:20px;text-align:center;color:var(--green)}
+.side-foot{position:absolute;bottom:20px;left:26px;color:#71808a;font-size:11px}
+main{padding:30px 34px 70px;max-width:1500px;width:100%;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:28px}
+.eyebrow{color:var(--green);font-size:11px;letter-spacing:1.8px;font-weight:800;text-transform:uppercase}
+h1{font-size:28px;margin:4px 0 0;letter-spacing:-.7px}h2{font-size:17px;margin:0 0 16px}
+.sub{color:var(--muted);font-size:13px}.top-right{display:flex;align-items:center;gap:12px}
+.pill{border:1px solid var(--line);border-radius:30px;padding:8px 12px;color:var(--muted);font-size:12px}
+.avatar{width:36px;height:36px;border-radius:50%;background:#29483b;color:var(--green);display:grid;place-items:center;font-weight:800}
+.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:19px;min-width:0}
+.stat-title{color:var(--muted);font-size:12px}.stat-value{font-size:26px;font-weight:800;margin:9px 0 3px;letter-spacing:-.6px}.positive{color:var(--green)}.negative{color:var(--red)}.hint{font-size:11px;color:var(--muted)}
+.two{grid-template-columns:1.45fr 1fr}.three{grid-template-columns:repeat(3,1fr)}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.btn{border:0;border-radius:8px;background:var(--green);color:#08130e;font-weight:800;padding:10px 14px;font-size:12px}
+.btn.secondary{background:#2a343b;color:#e7edf0;border:1px solid #3b474f}.btn.danger{background:#49282a;color:#ffaaaa}
+.btn.small{padding:7px 10px}
+table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;color:var(--muted);font-weight:600;padding:10px 8px;border-bottom:1px solid var(--line)}td{padding:12px 8px;border-bottom:1px solid #283138}tr:last-child td{border:0}
+.bar-list{display:grid;gap:15px}.bar-row{display:grid;grid-template-columns:95px 1fr 60px;gap:10px;align-items:center;font-size:12px}.track{height:8px;background:#2b343b;border-radius:10px;overflow:hidden}.fill{height:100%;background:var(--green);border-radius:10px}
+.notice{padding:13px 15px;background:#28271e;border:1px solid #51482b;border-radius:10px;color:#e7d69b;font-size:12px;margin-top:16px}
+.page{display:none}.page.active{display:block}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:var(--muted)}
+input,select,textarea{width:100%;background:#11171b;border:1px solid #39444c;color:var(--text);border-radius:8px;padding:11px 12px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--green)}textarea{min-height:75px;resize:vertical}
+.form-actions{display:flex;gap:9px;margin-top:18px}.section-gap{margin-top:18px}
+.empty{text-align:center;padding:28px;color:var(--muted);font-size:13px}
+.kpi{font-size:22px;font-weight:800}.tag{font-size:10px;padding:4px 7px;border-radius:20px;background:#263a31;color:var(--green)}
+.mobile-nav{display:none}
+.toast{position:fixed;right:20px;bottom:20px;background:#24352d;border:1px solid #3c7657;padding:12px 16px;border-radius:9px;display:none;z-index:10}
+@media(max-width:950px){.app{grid-template-columns:1fr}.sidebar{display:none}main{padding:22px 18px 90px}.stats{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#151a1e;border-top:1px solid var(--line);justify-content:space-around;padding:7px 2px calc(7px + env(safe-area-inset-bottom));z-index:5}.mobile-nav button{background:none;border:0;color:#aab5bc;font-size:10px;display:grid;gap:3px;justify-items:center}.mobile-nav button.active{color:var(--green)}.mobile-nav span{font-size:17px}.top{align-items:flex-start}.top-right .pill{display:none}}
+@media(max-width:520px){h1{font-size:23px}.stats{gap:10px}.card{padding:15px}.stat-value{font-size:22px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.bar-row{grid-template-columns:75px 1fr 50px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">DRIVE <span>CONTROL</span><small>VEHICLE PERFORMANCE SYSTEM</small></div>
+  <div class="nav-label">GESTIÓN</div>
+  <nav class="nav" id="sideNav">
+    <button class="active" data-page="dashboard"><span class="ico">▦</span>Dashboard</button>
+    <button data-page="jornada"><span class="ico">◷</span>Jornada</button>
+    <button data-page="combustible"><span class="ico">⛽</span>Combustible</button>
+    <button data-page="gastos"><span class="ico">◇</span>Gastos</button>
+    <button data-page="mantenimiento"><span class="ico">⚙</span>Mantenimiento</button>
+    <button data-page="conductor"><span class="ico">♙</span>Conductor</button>
+  </nav>
+  <div class="nav-label">ANÁLISIS</div>
+  <nav class="nav">
+    <button data-page="analisis"><span class="ico">▤</span>Rentabilidad</button>
+    <button data-page="historial"><span class="ico">◫</span>Historial</button>
+    <button data-page="configuracion"><span class="ico">⚑</span>Configuración</button>
+  </nav>
+  <div class="side-foot">PROTOTIPO 0.1 · DATOS LOCALES</div>
+</aside>
+<main>
+<header class="top">
+ <div><div class="eyebrow">Panel de control</div><h1 id="pageTitle">Resumen general</h1><div class="sub" id="todayLabel"></div></div>
+ <div class="top-right"><div class="pill">● Sistema de demostración</div><div class="avatar">DC</div></div>
+</header>
+
+<section class="page active" id="dashboard">
+ <div class="grid stats">
+  <div class="card"><div class="stat-title">Ingresos registrados</div><div class="stat-value" id="dIncome">$8,450</div><div class="hint">Periodo de demostración</div></div>
+  <div class="card"><div class="stat-title">Gastos registrados</div><div class="stat-value" id="dExpenses">$2,180</div><div class="hint">Vehículo y operación</div></div>
+  <div class="card"><div class="stat-title">Resultado operativo</div><div class="stat-value positive" id="dProfit">$6,270</div><div class="hint">Antes de depreciación</div></div>
+  <div class="card"><div class="stat-title">Kilómetros recorridos</div><div class="stat-value" id="dKm">1,240 km</div><div class="hint">Según jornadas registradas</div></div>
+ </div>
+ <div class="grid two">
+  <div class="card">
+   <div class="card-head"><h2>Actividad reciente</h2><button class="btn secondary small" onclick="showPage('historial')">Ver historial</button></div>
+   <table><thead><tr><th>Fecha</th><th>Actividad</th><th>Detalle</th><th>Importe</th></tr></thead><tbody id="recentRows"></tbody></table>
+  </div>
+  <div class="card">
+   <div class="card-head"><h2>Indicadores operativos</h2><span class="tag">DEMO</span></div>
+   <div class="bar-list">
+    <div class="bar-row"><span>Gasolina</span><div class="track"><div class="fill" style="width:68%"></div></div><b>68%</b></div>
+    <div class="bar-row"><span>Productividad</span><div class="track"><div class="fill" style="width:76%"></div></div><b>76%</b></div>
+    <div class="bar-row"><span>Rentabilidad</span><div class="track"><div class="fill" style="width:74%"></div></div><b>74%</b></div>
+   </div>
+   <div class="notice">Los indicadores gráficos son ilustrativos. Se calcularán con datos reales al registrar jornadas, cargas y gastos.</div>
+  </div>
+ </div>
+ <div class="grid three section-gap">
+  <div class="card"><div class="stat-title">Ingreso por hora</div><div class="kpi">$176.04</div><div class="hint">Ejemplo ilustrativo</div></div>
+  <div class="card"><div class="stat-title">Costo por kilómetro</div><div class="kpi">$1.76</div><div class="hint">Ejemplo ilustrativo</div></div>
+  <div class="card"><div class="stat-title">Rendimiento estimado</div><div class="kpi">12.8 km/L</div><div class="hint">Pendiente de cargas completas</div></div>
+ </div>
+</section>
+
+<section class="page" id="jornada">
+ <div class="grid two">
+  <div class="card">
+   <h2>Registrar jornada</h2>
+   <form id="shiftForm" class="form-grid">
+    <div class="field"><label>Fecha</label><input type="date" name="date" required></div>
+    <div class="field"><label>Horas de sueño previas</label><input type="number" name="sleep" min="0" max="24" step=".5" placeholder="Ej. 7.5"></div>
+    <div class="field"><label>Hora de inicio</label><input type="time" name="start" required></div>
+    <div class="field"><label>Hora de término</label><input type="time" name="end"></div>
+    <div class="field"><label>Kilometraje inicial</label><input type="number" name="kmStart" min="0" required placeholder="Ej. 85420"></div>
+    <div class="field"><label>Kilometraje final</label><input type="number" name="kmEnd" min="0" placeholder="Se puede completar al cerrar"></div>
+    <div class="field"><label>Ingreso Uber (MXN)</label><input type="number" name="uber" min="0" step=".01" placeholder="0"></div>
+    <div class="field"><label>Propinas / otros ingresos</label><input type="number" name="extra" min="0" step=".01" placeholder="0"></div>
+    <div class="field full"><label>Notas</label><textarea name="notes" placeholder="Observaciones de la jornada..."></textarea></div>
+    <div class="field full"><div class="form-actions"><button class="btn" type="submit">Guardar jornada</button><button class="btn secondary" type="reset">Limpiar</button></div></div>
+   </form>
+  </div>
+  <div class="card">
+   <h2>Últimas jornadas</h2>
+   <table><thead><tr><th>Fecha</th><th>Horas</th><th>Km</th><th>Ingresos</th></tr></thead><tbody id="shiftRows"></tbody></table>
+   <div class="notice">El sistema calcula kilómetros y duración cuando se capturan ambos extremos. Las pausas deberán registrarse para separar tiempo conectado y tiempo efectivo de conducción.</div>
+  </div>
+ </div>
+</section>
+
+<section class="page" id="combustible">
+ <div class="grid two">
+  <div class="card"><h2>Registrar carga de combustible</h2>
+   <form id="fuelForm" class="form-grid">
+    <div class="field"><label>Fecha</label><input name="date" type="date" required></div>
+    <div class="field"><label>Kilometraje</label><input name="km" type="number" min="0" required></div>
+    <div class="field"><label>Litros</label><input name="liters" type="number" min=".01" step=".01" required></div>
+    <div class="field"><label>Precio por litro (MXN)</label><input name="price" type="number" min="0" step=".01" required></div>
+    <div class="field"><label>Tipo de carga</label><select name="type"><option>Tanque lleno</option><option>Carga parcial</option></select></div>
+    <div class="field"><label>Estación</label><input name="station" placeholder="Nombre de estación"></div>
+    <div class="field full"><label>Notas</label><textarea name="notes"></textarea></div>
+    <div class="field full"><button class="btn">Guardar carga</button></div>
+   </form>
+  </div>
+  <div class="card"><h2>Historial de combustible</h2><table><thead><tr><th>Fecha</th><th>Litros</th><th>$/L</th><th>Total</th></tr></thead><tbody id="fuelRows"></tbody></table><div class="notice">Para calcular km/L con mayor precisión, registra cargas consecutivas de tanque lleno. Las cargas parciales se acumularán entre llenados.</div></div>
+ </div>
+</section>
+
+<section class="page" id="gastos">
+ <div class="grid two">
+  <div class="card"><h2>Registrar gasto</h2>
+   <form id="expenseForm" class="form-grid">
+    <div class="field"><label>Fecha</label><input name="date" type="date" required></div>
+    <div class="field"><label>Tipo de gasto</label><select name="category"><option>Gasolina adicional</option><option>Lavado</option><option>Estacionamiento</option><option>Peajes</option><option>Consumibles</option><option>Gasto personal del conductor</option><option>Otro</option></select></div>
+    <div class="field"><label>Importe (MXN)</label><input name="amount" type="number" min=".01" step=".01" required></div>
+    <div class="field"><label>Clasificación</label><select name="scope"><option value="auto">Automóvil / operación</option><option value="driver">Conductor / personal</option></select></div>
+    <div class="field full"><label>Descripción</label><input name="description" placeholder="Detalle del gasto"></div>
+    <div class="field full"><button class="btn">Guardar gasto</button></div>
+   </form>
+  </div>
+  <div class="card"><h2>Gastos registrados</h2><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Tipo</th><th>Importe</th></tr></thead><tbody id="expenseRows"></tbody></table></div>
+ </div>
+</section>
+
+<section class="page" id="mantenimiento">
+ <div class="grid two">
+  <div class="card"><h2>Registrar mantenimiento o reparación</h2>
+   <form id="maintenanceForm" class="form-grid">
+    <div class="field"><label>Fecha</label><input name="date" type="date" required></div>
+    <div class="field"><label>Kilometraje</label><input name="km" type="number" min="0"></div>
+    <div class="field"><label>Tipo</label><select name="type"><option>Servicio preventivo</option><option>Reparación mecánica</option><option>Reparación eléctrica</option><option>Llantas</option><option>Frenos</option><option>Suspensión</option><option>Batería</option><option>Otro</option></select></div>
+    <div class="field"><label>Costo (MXN)</label><input name="amount" type="number" min="0" step=".01" required></div>
+    <div class="field"><label>Taller / proveedor</label><input name="provider"></div>
+    <div class="field"><label>Próximo servicio a los km</label><input name="nextKm" type="number" min="0"></div>
+    <div class="field full"><label>Descripción</label><textarea name="description" required></textarea></div>
+    <div class="field full"><button class="btn">Guardar mantenimiento</button></div>
+   </form>
+  </div>
+  <div class="card"><h2>Historial de mantenimiento</h2><table><thead><tr><th>Fecha</th><th>Trabajo</th><th>Km</th><th>Costo</th></tr></thead><tbody id="maintenanceRows"></tbody></table></div>
+ </div>
+</section>
+
+<section class="page" id="conductor">
+ <div class="grid two">
+  <div class="card"><h2>Perfil del conductor</h2>
+   <form id="driverForm" class="form-grid">
+    <div class="field full"><label>Nombre</label><input name="name" placeholder="Nombre del conductor"></div>
+    <div class="field"><label>Meta diaria de ingresos (MXN)</label><input name="goal" type="number" min="0" step=".01" placeholder="Ej. 1500"></div>
+    <div class="field"><label>Horas objetivo por jornada</label><input name="hours" type="number" min="1" max="24" step=".5" placeholder="Ej. 8"></div>
+    <div class="field full"><button class="btn">Guardar perfil</button></div>
+   </form>
+  </div>
+  <div class="card"><h2>Resumen del conductor</h2><div class="stat-title">Nombre registrado</div><div class="kpi" id="driverName">Sin configurar</div><hr style="border-color:var(--line);margin:18px 0"><div class="stat-title">Sueño promedio registrado</div><div class="kpi" id="sleepAvg">—</div><div class="hint">Promedio de horas de sueño capturadas en jornadas.</div><div class="notice">Los registros de sueño sirven para observar hábitos y planificar descansos. No sustituyen una evaluación profesional ni determinan por sí solos la aptitud para conducir.</div></div>
+ </div>
+</section>
+
+<section class="page" id="analisis">
+ <div class="grid stats">
+  <div class="card"><div class="stat-title">Ingresos acumulados</div><div class="stat-value" id="aIncome">$0</div></div>
+  <div class="card"><div class="stat-title">Costos registrados</div><div class="stat-value" id="aCosts">$0</div></div>
+  <div class="card"><div class="stat-title">Resultado provisional</div><div class="stat-value positive" id="aNet">$0</div></div>
+  <div class="card"><div class="stat-title">Margen provisional</div><div class="stat-value" id="aMargin">0%</div></div>
+ </div>
+ <div class="grid two">
+  <div class="card"><h2>Rentabilidad y eficiencia</h2><table><tbody id="analysisRows"></tbody></table></div>
+  <div class="card"><h2>Modelo de costos completo</h2><p class="sub">Para obtener la rentabilidad económica real, la siguiente versión incorporará depreciación, seguros, impuestos, financiamiento y reservas de mantenimiento configurables.</p><div class="notice">El resultado actual es provisional: suma los ingresos de jornadas y resta gastos, combustible y mantenimiento registrados. No representa utilidad fiscal ni incluye todavía depreciación automática.</div></div>
+ </div>
+</section>
+
+<section class="page" id="historial">
+ <div class="card"><div class="card-head"><h2>Historial de registros</h2><button class="btn secondary small" onclick="exportCSV()">Exportar CSV</button></div><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Importe</th></tr></thead><tbody id="historyRows"></tbody></table><div class="empty" id="emptyHistory" style="display:none">Todavía no hay registros guardados.</div></div>
+</section>
+
+<section class="page" id="configuracion">
+ <div class="grid two">
+  <div class="card"><h2>Datos del vehículo</h2>
+   <form id="vehicleForm" class="form-grid">
+    <div class="field"><label>Marca</label><input name="brand" placeholder="Ej. Nissan"></div>
+    <div class="field"><label>Modelo</label><input name="model" placeholder="Ej. Versa"></div>
+    <div class="field"><label>Año</label><input name="year" type="number" placeholder="2022"></div>
+    <div class="field"><label>Placas</label><input name="plates" placeholder="ABC-123-A"></div>
+    <div class="field"><label>Precio de adquisición (MXN)</label><input name="purchase" type="number" min="0"></div>
+    <div class="field"><label>Valor actual estimado (MXN)</label><input name="current" type="number" min="0"></div>
+    <div class="field"><label>Kilometraje actual</label><input name="odometer" type="number" min="0"></div>
+    <div class="field"><label>Rendimiento esperado (km/L)</label><input name="efficiency" type="number" min="0" step=".1"></div>
+    <div class="field full"><button class="btn">Guardar vehículo</button></div>
+   </form>
+  </div>
+  <div class="card"><h2>Datos y privacidad</h2><p class="sub">Este prototipo guarda los registros en el almacenamiento local del navegador de este dispositivo.</p><p class="sub">No hay todavía cuentas, sincronización en la nube ni respaldo automático. No ingreses información sensible o documentos reales en esta versión de demostración.</p><button class="btn danger" onclick="clearData()">Borrar datos locales</button></div>
+ </div>
+</section>
+</main>
+</div>
+<nav class="mobile-nav" id="mobileNav">
+ <button class="active" data-page="dashboard"><span>▦</span>Inicio</button><button data-page="jornada"><span>◷</span>Jornada</button><button data-page="combustible"><span>⛽</span>Gasolina</button><button data-page="gastos"><span>◇</span>Gastos</button><button data-page="analisis"><span>▤</span>Análisis</button>
+</nav>
+<div class="toast" id="toast">Registro guardado</div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const KEY='driveControlPrototypeV1';
+let db=JSON.parse(localStorage.getItem(KEY)||'{"shifts":[],"fuel":[],"expenses":[],"maintenance":[],"driver":{},"vehicle":{}}');
+const money=n=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:2}).format(Number(n)||0);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function save(){localStorage.setItem(KEY,JSON.stringify(db));render();toast('Información guardada');}
+function toast(t){let x=$('#toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2200)}
+function showPage(id){$$('.page').forEach(p=>p.classList.toggle('active',p.id===id));$$('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('#pageTitle').textContent=({dashboard:'Resumen general',jornada:'Registro de jornada',combustible:'Control de combustible',gastos:'Gastos',mantenimiento:'Mantenimiento',conductor:'Conductor',analisis:'Análisis integral',historial:'Historial',configuracion:'Configuración'})[id]||id;window.scrollTo(0,0);render()}
+$$('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+$('#todayLabel').textContent=new Intl.DateTimeFormat('es-MX',{dateStyle:'full'}).format(new Date());
+function rows(el,items,fn,empty='Sin registros'){let x=$(el);x.innerHTML=items.length?items.slice().reverse().map(fn).join(''):`<tr><td colspan="5" class="empty">${empty}</td></tr>`}
+function render(){
+ const income=db.shifts.reduce((s,x)=>s+ +x.uber+ +x.extra,0);
+ const fuel=db.fuel.reduce((s,x)=>s+ +x.liters*+x.price,0);
+ const exp=db.expenses.filter(x=>x.scope==='auto').reduce((s,x)=>s+ +x.amount,0);
+ const maint=db.maintenance.reduce((s,x)=>s+ +x.amount,0);
+ const costs=fuel+exp+maint,net=income-costs,km=db.shifts.reduce((s,x)=>s+Math.max(0,(+x.kmEnd||0)-(+x.kmStart||0)),0);
+ $('#dIncome').textContent=money(income||8450);$('#dExpenses').textContent=money(costs||2180);$('#dProfit').textContent=money((income||8450)-(costs||2180));$('#dKm').textContent=(km||1240).toLocaleString('es-MX')+' km';
+ $('#aIncome').textContent=money(income);$('#aCosts').textContent=money(costs+db.expenses.filter(x=>x.scope==='driver').reduce((s,x)=>s+ +x.amount,0));$('#aNet').textContent=money(net);$('#aMargin').textContent=(income?((net/income)*100).toFixed(1):'0.0')+'%';
+ const hours=db.shifts.reduce((s,x)=>s+(x.start&&x.end?duration(x.start,x.end):0),0);
+ const rowsA=[['Kilómetros registrados',km.toLocaleString('es-MX')+' km'],['Horas de jornada registradas',hours.toFixed(1)+' h'],['Ingreso promedio por hora',money(hours?income/hours:0)],['Costo registrado por kilómetro',money(km?costs/km:0)],['Gasto de combustible',money(fuel)],['Gastos del automóvil',money(exp)],['Mantenimiento y reparaciones',money(maint)],['Gastos personales del conductor',money(db.expenses.filter(x=>x.scope==='driver').reduce((s,x)=>s+ +x.amount,0))]];
+ $('#analysisRows').innerHTML=rowsA.map(r=>`<tr><td>${r[0]}</td><td style="text-align:right;font-weight:700">${r[1]}</td></tr>`).join('');
+ rows('#shiftRows',db.shifts,x=>`<tr><td>${esc(x.date)}</td><td>${x.start&&x.end?duration(x.start,x.end).toFixed(1)+' h':'—'}</td><td>${x.kmEnd&&x.kmStart?Math.max(0,x.kmEnd-x.kmStart)+' km':'—'}</td><td>${money(+x.uber + +x.extra)}</td></tr>`);
+ rows('#fuelRows',db.fuel,x=>`<tr><td>${esc(x.date)}</td><td>${x.liters} L</td><td>${money(x.price)}</td><td>${money(x.liters*x.price)}</td></tr>`);
+ rows('#expenseRows',db.expenses,x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.category)}</td><td>${x.scope==='driver'?'Conductor':'Auto'}</td><td>${money(x.amount)}</td></tr>`);
+ rows('#maintenanceRows',db.maintenance,x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.type)}</td><td>${x.km||'—'}</td><td>${money(x.amount)}</td></tr>`);
+ const all=history();rows('#historyRows',all,x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.type)}</td><td>${esc(x.description)}</td><td>${x.amount===null?'—':money(x.amount)}</td></tr>`);$('#emptyHistory').style.display=all.length?'none':'block';
+ rows('#recentRows',all.slice(-5),x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.type)}</td><td>${esc(x.description)}</td><td>${x.amount===null?'—':money(x.amount)}</td></tr>`);
+ const sleeps=db.shifts.filter(x=>x.sleep!==''&&x.sleep!=null).map(x=>+x.sleep);$('#sleepAvg').textContent=sleeps.length?(sleeps.reduce((a,b)=>a+b,0)/sleeps.length).toFixed(1)+' horas':'—';
+ $('#driverName').textContent=db.driver.name||'Sin configurar';
+ if(db.driver.name)$('#driverForm').elements.name.value=db.driver.name;
+ if(db.driver.goal)$('#driverForm').elements.goal.value=db.driver.goal;
+ if(db.driver.hours)$('#driverForm').elements.hours.value=db.driver.hours;
+ Object.entries(db.vehicle).forEach(([k,v])=>{let el=$('#vehicleForm').elements[k];if(el)el.value=v});
+}
+function duration(a,b){let [h,m]=a.split(':').map(Number),[h2,m2]=b.split(':').map(Number);let d=(h2*60+m2-h*60-m)/60;return d<0?d+24:d}
+function history(){let a=[];db.shifts.forEach(x=>a.push({date:x.date,type:'Jornada',description:`${x.kmStart||'—'} a ${x.kmEnd||'—'} km`,amount:+x.uber + +x.extra}));db.fuel.forEach(x=>a.push({date:x.date,type:'Combustible',description:`${x.liters} L · ${x.station||x.type}`,amount:x.liters*x.price}));db.expenses.forEach(x=>a.push({date:x.date,type:'Gasto',description:x.description||x.category,amount:+x.amount}));db.maintenance.forEach(x=>a.push({date:x.date,type:'Mantenimiento',description:x.description||x.type,amount:+x.amount}));return a.sort((a,b)=>a.date.localeCompare(b.date))}
+function data(form){return Object.fromEntries(new FormData(form).entries())}
+function dateDefault(){return new Date().toISOString().slice(0,10)}
+['shiftForm','fuelForm','expenseForm','maintenanceForm'].forEach(id=>{let f=$('#'+id);f.elements.date.value=dateDefault();f.addEventListener('submit',e=>{e.preventDefault();let x=data(f);if(id==='shiftForm'){if(x.kmEnd&&+x.kmEnd<+x.kmStart){alert('El kilometraje final no puede ser menor al inicial.');return}db.shifts.push(x)}if(id==='fuelForm')db.fuel.push(x);if(id==='expenseForm')db.expenses.push(x);if(id==='maintenanceForm')db.maintenance.push(x);save();f.reset();f.elements.date.value=dateDefault()})});
+$('#driverForm').addEventListener('submit',e=>{e.preventDefault();db.driver=data(e.target);save()});
+$('#vehicleForm').addEventListener('submit',e=>{e.preventDefault();db.vehicle=data(e.target);save()});
+function exportCSV(){let a=history(),csv=['Fecha,Tipo,Descripción,Importe',...a.map(x=>[x.date,x.type,`"${String(x.description).replace(/"/g,'""')}"`,x.amount??''].join(','))].join('\n');let blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),ael=document.createElement('a');ael.href=url;ael.download='drive-control-historial.csv';ael.click();URL.revokeObjectURL(url)}
+function clearData(){if(confirm('¿Borrar todos los registros guardados en este navegador? Esta acción no se puede deshacer.')){localStorage.removeItem(KEY);location.reload()}}
+render();
+</script>
+</body></html>
